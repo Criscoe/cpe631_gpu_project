@@ -2,14 +2,14 @@ import cv2
 import numpy as np
 import time
 
-def benchmark_cpu(image, num_iterations=1):
+def benchmark_cpu(image, num_iterations=100):
     start = time.time()
     for _ in range(num_iterations):
         _ = cv2.GaussianBlur(image, (15, 15), 0)
     end = time.time()
     return end - start
 
-def benchmark_gpu(image, num_iterations=1):
+def benchmark_gpu(image, num_iterations=100):
     if cv2.ocl.haveOpenCL():
         print("[INFO] OpenCL is available. Enabling OpenCL...")
         cv2.ocl.setUseOpenCL(True)
