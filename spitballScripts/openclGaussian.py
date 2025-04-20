@@ -9,7 +9,7 @@ def benchmark_cpu(image, num_iterations=100):
     end = time.time()
     return end - start
 
-def benchmark_gpu(image, num_iterations=100):
+def benchmark_gpu(image, num_iterations=10000):
     if cv2.ocl.haveOpenCL():
         print("[INFO] OpenCL is available. Enabling OpenCL...")
         cv2.ocl.setUseOpenCL(True)
@@ -34,9 +34,9 @@ def main():
         print("Failed to load image.")
         return
 
-    print("Starting CPU benchmark...")
-    cpu_time = benchmark_cpu(image)
-    print(f"CPU Time: {cpu_time:.4f} seconds")
+    # print("Starting CPU benchmark...")
+    # cpu_time = benchmark_cpu(image)
+    # print(f"CPU Time: {cpu_time:.4f} seconds")
 
     print("\nStarting GPU benchmark...")
     try:
