@@ -4,15 +4,6 @@ import time
 import argparse
 # from scalene import scalene_profiler
 
-def benchmark_cpu_single_threaded(image):
-    upper = 50
-    lower = 150
-    start = time.time()
-    for _ in range(num_iterations):
-        _ = cv2.Canny(image, lower, upper)
-    end = time.time()
-    return end - start
-
 # @profile
 def benchmark_cpu(image, num_iterations):
     upper = 50
@@ -52,7 +43,7 @@ def benchmark_gpu(args, image, num_iterations):
 def main():
     parser = argparse.ArgumentParser(description="Python benchmark for Canny edge detection using single/multi threaded CPU and GPU.")
     parser.add_argument("--enable-img-result", action="store_true", help="Enables printing of resulting image")
-    parser.add_argument("--num_iterations", type=int, default=1, help="Num iterations to execute on")
+    parser.add_argument("--num-iterations", type=int, default=1, help="Num iterations to execute on")
     parser.add_argument("--num-cpu-threads", type=int, default=1, help="Number of cpu threads to use")
     args = parser.parse_args()
     # Load an image (adjust size for a more demanding task)
