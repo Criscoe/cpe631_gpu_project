@@ -60,7 +60,7 @@ def main():
     parser.add_argument("--benchmark-image", type=str, default='sample.jpg', help="Path and image name of benchmark image used")
     args = parser.parse_args()
     # Load an image (adjust size for a more demanding task)
-    image = cv2.imread('sample.jpg')
+    image = cv2.imread(args.benchmark_image)
     if image is None:
         print("Failed to load image.")
         return
