@@ -33,9 +33,11 @@ def benchmark_gpuOpenCL(image, num_iterations):
     # Apply Gaussian Blur using OpenCL
     start = time.time()
     for _ in range(num_iterations):
-        _ = cv2.Canny(u_image, lower, upper)
+        edged = cv2.Canny(u_image, lower, upper)
     end = time.time()
     
+    edged.isContinuous()
+    cv2.ocl.setUseOpenCL(False)
     return end - start
 
 # @profile
