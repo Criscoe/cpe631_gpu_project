@@ -7,6 +7,7 @@
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/core/cuda.hpp>
+#include <chrono>
 
 int main()
 {
@@ -21,8 +22,15 @@ int main()
     d_img.upload(h_img);
 
     cv::cuda::GpuMat d_edges;
-    cv::Ptr<cv::cuda::CannyEdgeDetector> canny = cv::cuda::createCannyEdgeDetector(100, 200);
-    canny->detect(d_img, d_edges);
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < 1000; ++i)
+    {
+        cv::Ptr<cv::cuda::CannyEdgeDetector> canny = cv::cuda::createCannyEdgeDetector(100, 200);
+        canny->detect(d_img, d_edges);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "GPU Time: " << std::setprecision(15) << elapsed.count() << " seconds" << std::endl;
 
     cv::Mat h_edges;
     d_edges.download(h_edges);
