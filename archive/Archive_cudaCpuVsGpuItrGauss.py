@@ -3,18 +3,17 @@ import numpy as np
 import time
 import argparse
 import csv
-import cProfile
-import re
-from random import randint
+import pandas as pd
+import matplotlib.pyplot as plt
+
 # from scalene import scalene_profiler
 
 
 # @profile
-def benchmark_cpu(image, num_iterations):
+def benchmark_cpu(image, num_iterations, useGauss):
 
     start = time.time()
     for _ in range(num_iterations):
-        
         _ = cv2.GaussianBlur(image, (15, 15), 1.5)
     end = time.time()
     return end - start
@@ -136,12 +135,28 @@ def main():
         print(f"GPU Time (OpenCL): {gpu_timeoOpenCl:.6f} seconds\n")
         timeData.append({'size': (str(width)+'x'+str(height)), 'cpu': cpu_time, 'cuda': gpu_time, 'openCL': gpu_timeoOpenCl})
 
-    with open('sizeMetricsItrGauss.csv', 'w', newline='') as csvfile:
+    runTimestamp = str(int(time.time()))
+    testName = 'IterationsTestGauss'
+
+    with open("data/" + runTimestamp + "_" + testName + "_n" + str(n) + "_thr" + str(args.num_cpu_threads) +".csv", 'w', newline='') as csvfile:
         fieldnames = ['size', 'cpu', 'cuda', 'openCL']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(timeData)
 
+    df = pd.DataFrame(timeData)
+    plt.plot(df['size'], df['cpu'], label="cpu")
+    plt.plot(df['size'], df["cuda"], label="cuda")
+    plt.plot(df['size'], df["openCL"], label="openCL")
+    plt.legend()
+    plt.title("Exicution time (seconds) vs Size (w x h pixes) for "+ str(n) + " itterations")
+    plt.xlabel('size')
+    plt.ylabel('Exicution Time')
+    plotName = "plots/" + runTimestamp + "_" + testName + "_n" + str(n) + "_thr" + str(args.num_cpu_threads) +".jpg"
+    plt.savefig(plotName)
+
+    plt.yscale('log')
+    plt.savefig("plots/" + runTimestamp + "_" + testName + "_n" + str(n) + "_thr" + str(args.num_cpu_threads) +"_logScale" + ".jpg")
 
 if __name__ == "__main__":
     main()

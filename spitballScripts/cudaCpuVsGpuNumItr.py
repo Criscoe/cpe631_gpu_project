@@ -131,29 +131,28 @@ def benchmark_gpu_gauss(image, num_iterations):
 
 def main():
     parser = argparse.ArgumentParser(description="Python benchmark for Canny edge detection using single/multi threaded CPU and GPU.")
-    parser.add_argument("--num-iterations", type=int, default=1000, help="Num iterations to execute calculations on")
+    parser.add_argument("--max-iterations", type=int, default=1000, help="Num iterations to execute calculations on")
     parser.add_argument("--num-cpu-threads", type=int, default=16, help="Number of cpu threads to use")
-    parser.add_argument("--image-path", type=str, default='images', help="Path image folder used")
+    parser.add_argument("--full-image-path", type=str, default='images/sample.jpg', help="Path image folder used")
     parser.add_argument("--gauss", action="store_true", help="Use gauss algorithm")
+    parser.add_argument("--rate", type=int, default=100, help="Path image folder used")
     args = parser.parse_args()
 
     cv2.setNumThreads(args.num_cpu_threads)
     cpu_time = 0.0
     gpu_time = 0.0
 
-    imageSmall = cv2.imread(args.image_path + "/sample_80x45.jpg")
-    imageMed = cv2.imread(args.image_path + "/sample_1920x1080.jpg")
-    imageLarge = cv2.imread(args.image_path + "/sample.jpg")
+    image = cv2.imread(args.full_image_path)
 
-    cpuBenchmarkMsg="Starting Iterations Test benchmark..."
+    cpuBenchmarkMsg="Starting Num Iterations Test benchmark..."
     print(cpuBenchmarkMsg)
-    n = args.num_iterations
+    n = 1
+    nMax = args.max_iterations
     timeData = []
     gpu_timeData = []
 
-    images = [cv2.cvtColor(imageSmall, cv2.COLOR_BGR2GRAY), cv2.cvtColor(imageMed, cv2.COLOR_BGR2GRAY), cv2.cvtColor(imageLarge, cv2.COLOR_BGR2GRAY)]
-    for gsImage in images:
-        height, width = gsImage.shape[:2]
+    gsImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    while n < nMax:
         if args.gauss:
             cpu_time = benchmark_cpu_Gauss(gsImage, n)
             gpu_timeoOpenCl = benchmark_gpuOpenCL_Gauss(gsImage, n)
@@ -174,22 +173,24 @@ def main():
         # print(f"CPU Time: {cpu_time:.6f} seconds\n")
         # print(f"GPU Time: {gpu_time:.6f} seconds\n")
         # print(f"GPU Time (OpenCL): {gpu_timeoOpenCl:.6f} seconds\n")
-        timeData.append({'size': (str(width)+'x'+str(height)), 'cpu': cpu_time, 'cuda': gpu_time, 'openCL': gpu_timeoOpenCl})
+        print(n)
+        timeData.append({'n': n, 'cpu': cpu_time, 'cuda': gpu_time, 'openCL': gpu_timeoOpenCl})
+        n += args.rate 
 
     runTimestamp = str(int(time.time()))
     if args.gauss:
-        testName = 'IterationsTestGauss'
+        testName = 'NumberIterationsTestGauss'
     else:
-        testName = 'IterationsTestCanny'
+        testName = 'NumberIterationsTestCanny'
         
 
-    with open("data/" + runTimestamp + "_" + testName + "_n" + str(n) + "_thr" + str(args.num_cpu_threads) +".csv", 'w', newline='') as csvfile:
-        fieldnames = ['size', 'cpu', 'cuda', 'openCL']
+    with open("data/" + runTimestamp + "_" + testName + "_n" + str(nMax) + "_thr" + str(args.num_cpu_threads) +".csv", 'w', newline='') as csvfile:
+        fieldnames = ['n', 'cpu', 'cuda', 'openCL']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(timeData)
 
-    with open("data/" + str(runTimestamp) + "_" + testName + "_n" + str(n) + "_thr" + str(args.num_cpu_threads) +"CPU.csv", 'w', newline='') as csvfile:
+    with open("data/" + str(runTimestamp) + "_" + testName + "_n" + str(nMax) + "_thr" + str(args.num_cpu_threads) +"CPU.csv", 'w', newline='') as csvfile:
         fieldnames = ['setup', 'downloadTime' ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -197,18 +198,18 @@ def main():
 
     df = pd.DataFrame(timeData)
     plt.figure(figsize = (20,8))
-    plt.plot(df['size'], df['cpu'], label="cpu")
-    plt.plot(df['size'], df["cuda"], label="cuda")
-    plt.plot(df['size'], df["openCL"], label="openCL")
+    plt.plot(df['n'], df['cpu'], label="cpu")
+    plt.plot(df['n'], df["cuda"], label="cuda")
+    plt.plot(df['n'], df["openCL"], label="openCL")
     plt.legend()
-    plt.title("Exicution time (seconds) vs Size (w x h pixes) for "+ str(n) + " itterations")
-    plt.xlabel('size')
+    plt.title("Exicution time (seconds) vs Number Iterations")
+    plt.xlabel('Number Iterations')
     plt.ylabel('Exicution Time')
-    plotName = "plots/" + str(runTimestamp) + "_" + testName + "_n" + str(n) + "_thr" + str(args.num_cpu_threads) +".jpg"
+    plotName = "plots/" + str(runTimestamp) + "_" + testName + "_n" + str(nMax) + "_thr" + str(args.num_cpu_threads) +".jpg"
     plt.savefig(plotName)
 
     plt.yscale('log')
-    plt.savefig("plots/" +str(runTimestamp) + "_" + testName + "_n" + str(n) + "_thr" + str(args.num_cpu_threads) +"_logScale.jpg")
+    plt.savefig("plots/" +str(runTimestamp) + "_" + testName + "_n" + str(nMax) + "_thr" + str(args.num_cpu_threads) +"_logScale.jpg")
 
 
 

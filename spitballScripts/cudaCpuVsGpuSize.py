@@ -3,9 +3,8 @@ import numpy as np
 import time
 import argparse
 import csv
-import cProfile
-import re
-from random import randint
+import pandas as pd
+import matplotlib.pyplot as plt
 # from scalene import scalene_profiler
 
 
@@ -53,72 +52,40 @@ def benchmark_gpu(args, image):
     setupTime = endGpuSetup - startGpuSetup
     # print(f"Time taken for image upload: {setupTime:.4f}")
 
-    if args.enable_img_result:
-        canny = cv2.cuda.createCannyEdgeDetector(lower, upper)
-        edged = canny.detect(gpu_img)
-
     start = time.time()
     canny = cv2.cuda.createCannyEdgeDetector(lower, upper)
-    edged = canny.detect(gpu_img)
+    gpu_restlt = canny.detect(gpu_img)
     end = time.time()
 
     # Download resulting image from gpu
     startGpuDownload = time.time()
-    result = edged.download()
+    result = gpu_restlt.download()
     endGpuDownload = time.time()
     downloadTime = endGpuDownload - startGpuDownload
     # print(f"Time taken for image download: {downloadTime:.4f}")
-
-    if args.enable_img_result:
-        cv2.imshow("Output", result)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    return end - start
+    
+    return endGpuDownload - startGpuSetup
 
 def main():
     parser = argparse.ArgumentParser(description="Python benchmark for Canny edge detection using single/multi threaded CPU and GPU.")
-    parser.add_argument("--enable-img-result", action="store_true", help="Enables printing of resulting image")
-    parser.add_argument("--num-iterations", type=int, default=1, help="Num iterations to execute calculations on")
-    parser.add_argument("--num-cpu-threads", type=int, default=1, help="Number of cpu threads to use")
-    parser.add_argument("--benchmark-image", type=str, default='sample.jpg', help="Path and image name of benchmark image used")
-    parser.add_argument("--type", type=int, default=0, help="0: Both, 1: CPU, 2: GPU, 3: Optimized")
+    parser.add_argument("--num-cpu-threads", type=int, default=16, help="Number of cpu threads to use")
+    parser.add_argument("--image-path", type=str, default='images', help="Path image folder used")
+    parser.add_argument("--rate", type=float, default=0.5, help="Path image folder used")
     args = parser.parse_args()
+
     # Load an image (adjust size for a more demanding task)
 
     cv2.setNumThreads(args.num_cpu_threads)
     cpu_time = 0.0
     gpu_time = 0.0
-    runOpt = False;
 
-    # if args.type == 0:
-    #     runCpu = True
-    #     runGpu = True
-    # elif args.type == 1:
-    #     runCpu = True
-    #     runGpu = False
-    # elif args.type == 2:
-    #     runCpu = False
-    #     runGpu = True
-    # elif args.type == 3:
-    #     runCpu = True
-    #     runGpu = True
-    #     runOpt = True
-    # else:
-    #     runCpu = False
-    #     runGpu = False
+    imageLarge = cv2.imread(args.image_path + "/sample_6000x4000.jpg")
 
-    imageLarge = cv2.imread("../sample_6000x4000.jpg")
-
-
-    cpuBenchmarkMsg="Starting CPU benchmark..."
-    if args.num_cpu_threads == 1:
-        cpuBenchmarkMsg="Starting single-threaded CPU benchmark..."
-    print(cpuBenchmarkMsg)
-    print("Starting GPU benchmark...")
+    print("Starting Size benchmark...")
 
     timeData = []
     grayimg = cv2.cvtColor(imageLarge, cv2.COLOR_BGR2GRAY)
-    for i in range(grayimg.shape[1]):
+    while grayimg.shape[1] > 0:
         height, width = grayimg.shape[:2]
         cpu_time = benchmark_cpu(grayimg)
         gpu_timeoOpenCl = benchmark_gpuOpenCL(grayimg)
@@ -127,21 +94,40 @@ def main():
         except RuntimeError as e:
             print(f"GPU Benchmark skipped: {e}")        
         
-        print(f"CPU Time: {cpu_time:.6f} seconds\n")
-        print(f"GPU Time: {gpu_time:.6f} seconds\n")
-        print(f"GPU Time (OpenCL): {gpu_timeoOpenCl:.6f} seconds\n")
-        print(f"Image Width: {width} Hight: {height}\n")
+        # print(f"CPU Time: {cpu_time:.6f} seconds\n")
+        # print(f"GPU Time: {gpu_time:.6f} seconds\n")
+        # print(f"GPU Time (OpenCL): {gpu_timeoOpenCl:.6f} seconds\n")
+        # print(f"Image Width: {width} Hight: {height}\n")
         timeData.append({'size': (str(width)+'x'+str(height)), 'cpu': cpu_time, 'cuda': gpu_time, 'openCL': gpu_timeoOpenCl})
-        if height*.5 >= 1 and width*.5 >= 1: 
-            grayimg = cv2.resize(grayimg, (0, 0), fx = 0.5, fy = 0.5)
+        if height*args.rate >= 1 and width*args.rate >= 1: 
+            grayimg = cv2.resize(grayimg, (0, 0), fx = args.rate, fy = args.rate)
         else:
             break
-    with open('sizeMetrics.csv', 'w', newline='') as csvfile:
+
+    runTimestamp = str(int(time.time()))
+    testName = 'ImageSize'
+    rate = str(args.rate).replace('.', '_')
+
+    with open("data/" + runTimestamp + "_" + testName + "_rate" + rate + "_thr" + str(args.num_cpu_threads) +".csv", 'w', newline='') as csvfile:
         fieldnames = ['size', 'cpu', 'cuda', 'openCL']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(timeData)
 
+    df = pd.DataFrame(timeData)
+    plt.figure(figsize = (20,8))
+    plt.plot(df['size'], df['cpu'], label="cpu")
+    plt.plot(df['size'], df["cuda"], label="cuda")
+    plt.plot(df['size'], df["openCL"], label="openCL")
+    plt.legend()
+    plt.title("Exicution time (seconds) vs Size (w x h pixes)")
+    plt.xlabel('size')
+    plt.ylabel('Exicution Time')
+    plotName = "plots/" + str(runTimestamp) + "_" + testName + "_rate" + rate + "_thr" + str(args.num_cpu_threads) +".jpg"
+    plt.savefig(plotName)
+
+    plt.yscale('log')
+    plt.savefig("plots/" +str(runTimestamp) + "_" + testName + "_rate" + rate + "_thr" + str(args.num_cpu_threads) +"_logScale.jpg")
 
 if __name__ == "__main__":
     main()
