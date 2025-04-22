@@ -10,17 +10,17 @@ from random import randint
 
 
 # @profile
-def benchmark_cpu(image):
-    upper = 50
-    lower = 150
+def benchmark_cpu(image, num_iterations):
+
     start = time.time()
-    _ = cv2.Canny(image, lower, upper)
+    for _ in range(num_iterations):
+        
+        _ = cv2.GaussianBlur(image, (15, 15), 1.5)
     end = time.time()
     return end - start
 
-def benchmark_gpuOpenCL(image):
-    upper = 50
-    lower = 150
+def benchmark_gpuOpenCL(image, num_iterations):
+
     if cv2.ocl.haveOpenCL():
         cv2.ocl.setUseOpenCL(True)
     else:
@@ -31,40 +31,40 @@ def benchmark_gpuOpenCL(image):
 
     # Apply Gaussian Blur using OpenCL
     start = time.time()
-
-    edged = cv2.Canny(u_image, lower, upper)
+    for _ in range(num_iterations):
+        _ = cv2.GaussianBlur(u_image, (15, 15), 1.5)
     end = time.time()
-    edged.isContinuous()
+    
     cv2.ocl.setUseOpenCL(False)
     return end - start
 
 # @profile
-def benchmark_gpu(args, image):
+def benchmark_gpu(args, image, num_iterations):
     if not cv2.cuda.getCudaEnabledDeviceCount():
         raise RuntimeError("No CUDA-capable GPU detected or OpenCV not built with CUDA support.")
     
-    upper = 50
-    lower = 150
     # Set up gpu and upload image
     startGpuSetup = time.time()
+    gpu_gaussian = cv2.cuda.createGaussianFilter(
+        cv2.CV_8UC1,  # Source image type (8-bit unsigned, single channel)
+        cv2.CV_8UC1,  # Destination image type
+        (15, 15),      # Kernel size (15x15)
+        1.5         # Sigma value (standard deviation)
+    )
     gpu_img = cv2.cuda_GpuMat()
     gpu_img.upload(image)
     endGpuSetup = time.time()
     setupTime = endGpuSetup - startGpuSetup
     # print(f"Time taken for image upload: {setupTime:.4f}")
 
-    if args.enable_img_result:
-        canny = cv2.cuda.createCannyEdgeDetector(lower, upper)
-        edged = canny.detect(gpu_img)
-
     start = time.time()
-    canny = cv2.cuda.createCannyEdgeDetector(lower, upper)
-    edged = canny.detect(gpu_img)
+    for _ in range(num_iterations):
+        gaussBlur = gpu_gaussian.apply(gpu_img)
     end = time.time()
 
     # Download resulting image from gpu
     startGpuDownload = time.time()
-    result = edged.download()
+    result = gaussBlur.download()
     endGpuDownload = time.time()
     downloadTime = endGpuDownload - startGpuDownload
     # print(f"Time taken for image download: {downloadTime:.4f}")
@@ -73,7 +73,7 @@ def benchmark_gpu(args, image):
         cv2.imshow("Output", result)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-    return end - start
+    return endGpuDownload - startGpuSetup
 
 def main():
     parser = argparse.ArgumentParser(description="Python benchmark for Canny edge detection using single/multi threaded CPU and GPU.")
@@ -107,7 +107,10 @@ def main():
     #     runCpu = False
     #     runGpu = False
 
-    imageLarge = cv2.imread("../sample_6000x4000.jpg")
+    imageSmall = cv2.imread("../sample_80x45.jpg")
+    imageMed = cv2.imread("../sample_1920x1080.jpg")
+    imageLarge = cv2.imread("../sample.jpg")
+
 
 
     cpuBenchmarkMsg="Starting CPU benchmark..."
@@ -115,28 +118,25 @@ def main():
         cpuBenchmarkMsg="Starting single-threaded CPU benchmark..."
     print(cpuBenchmarkMsg)
     print("Starting GPU benchmark...")
+    n = 1000
 
     timeData = []
-    grayimg = cv2.cvtColor(imageLarge, cv2.COLOR_BGR2GRAY)
-    for i in range(grayimg.shape[1]):
-        height, width = grayimg.shape[:2]
-        cpu_time = benchmark_cpu(grayimg)
-        gpu_timeoOpenCl = benchmark_gpuOpenCL(grayimg)
+    images = [cv2.cvtColor(imageSmall, cv2.COLOR_BGR2GRAY), cv2.cvtColor(imageMed, cv2.COLOR_BGR2GRAY), cv2.cvtColor(imageLarge, cv2.COLOR_BGR2GRAY)]
+    for i in range(3):
+        height, width = images[i].shape[:2]
+        cpu_time = benchmark_cpu(images[i], n)
+        gpu_timeoOpenCl = benchmark_gpuOpenCL(images[i], n)
         try:
-            gpu_time = benchmark_gpu(args, grayimg)
+            gpu_time = benchmark_gpu(args, images[i], n)
         except RuntimeError as e:
             print(f"GPU Benchmark skipped: {e}")        
         
         print(f"CPU Time: {cpu_time:.6f} seconds\n")
         print(f"GPU Time: {gpu_time:.6f} seconds\n")
         print(f"GPU Time (OpenCL): {gpu_timeoOpenCl:.6f} seconds\n")
-        print(f"Image Width: {width} Hight: {height}\n")
         timeData.append({'size': (str(width)+'x'+str(height)), 'cpu': cpu_time, 'cuda': gpu_time, 'openCL': gpu_timeoOpenCl})
-        if height*.5 >= 1 and width*.5 >= 1: 
-            grayimg = cv2.resize(grayimg, (0, 0), fx = 0.5, fy = 0.5)
-        else:
-            break
-    with open('sizeMetrics.csv', 'w', newline='') as csvfile:
+
+    with open('sizeMetricsItrGauss.csv', 'w', newline='') as csvfile:
         fieldnames = ['size', 'cpu', 'cuda', 'openCL']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
