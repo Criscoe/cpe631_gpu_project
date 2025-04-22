@@ -1,0 +1,4 @@
+size,cuda,opencl,cpu,single-threaded-cpu
+sample.jpg,5.55972,0.205737,5.59443,27.3263
+sample_1920x1080.jpg,2.68708,0.115668,2.28352,9.21726
+sample_80x45.jpg,0.646792,0.0231675,0.0740964,0.0090784
