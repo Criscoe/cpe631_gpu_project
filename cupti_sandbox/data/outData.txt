@@ -1,0 +1,12 @@
+Activity: MEMSET		TotalDuration: 12941112		Occurrences: 4624
+Activity: CONCURRENT_KERNEL		TotalDuration: 260563596		Occurrences: 7706
+Activity: MEMCPY		TotalDuration: 2691227		Occurrences: 3085
+Activity: RUNTIME		TotalDuration: 1493725679		Occurrences: 72456
+Activity: OVERHEAD		TotalDuration: 5022610		Occurrences: 14
+Activity: DRIVER		TotalDuration: 2456180		Occurrences: 655
+Activity: MEMSET		TotalDuration: 100463810		Occurrences: 9000
+Activity: CONCURRENT_KERNEL		TotalDuration: 1990850051		Occurrences: 15000
+Activity: MEMCPY		TotalDuration: 8205889		Occurrences: 6006
+Activity: RUNTIME		TotalDuration: 9797338216		Occurrences: 141018
+Activity: OVERHEAD		TotalDuration: 6661299		Occurrences: 17
+Activity: DRIVER		TotalDuration: 2456180		Occurrences: 655

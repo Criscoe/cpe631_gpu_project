@@ -404,7 +404,7 @@ static void SetupCupti(void)
     pUserData->printActivityRecords = 1;
 
     // Common CUPTI Initialization.
-    InitCuptiTrace(pUserData, (void *)InjectionCallbackHandler, stdout);
+    InitCuptiTrace(pUserData, (void *)InjectionCallbackHandler, stderr);
 
     injectionGlobals.subscriberHandle = globals.subscriberHandle;
 

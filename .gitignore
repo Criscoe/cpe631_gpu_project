@@ -5,3 +5,6 @@ cupti_common*
 build
 .vscode
 settings
+sandbox*
+*.dll
+*.so
