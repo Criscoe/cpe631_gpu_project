@@ -120,7 +120,7 @@ def main():
     plt.plot(df['size'], df["cuda"], label="cuda")
     plt.plot(df['size'], df["openCL"], label="openCL")
     plt.legend()
-    plt.title("Execution time (seconds) vs Size (w x h pixes)")
+    plt.title("Execution time (seconds) vs Size (w x h pixels)")
     plt.xlabel('size')
     plt.ylabel('Execution Time')
     plotName = "plots/" + str(runTimestamp) + "_" + testName + "_rate" + rate + "_thr" + str(args.num_cpu_threads) +".jpg"
