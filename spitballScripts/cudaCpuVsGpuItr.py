@@ -5,10 +5,10 @@ import argparse
 import csv
 import pandas as pd
 import matplotlib.pyplot as plt
-# from scalene import scalene_profiler
+from scalene import scalene_profiler
 
 
-# @profile
+@profile
 def benchmark_cpu_Canny(image, num_iterations):
     upper = 50
     lower = 150
@@ -18,6 +18,7 @@ def benchmark_cpu_Canny(image, num_iterations):
     end = time.time()
     return end - start
 
+@profile
 def benchmark_cpu_Gauss(image, num_iterations):
     start = time.time()
     for _ in range(num_iterations):
@@ -25,7 +26,7 @@ def benchmark_cpu_Gauss(image, num_iterations):
     end = time.time()
     return end - start
 
-
+@profile
 def benchmark_gpuOpenCL_Canny(image, num_iterations):
     upper = 50
     lower = 150
@@ -46,6 +47,7 @@ def benchmark_gpuOpenCL_Canny(image, num_iterations):
     cv2.ocl.setUseOpenCL(False)
     return end - start
 
+@profile
 def benchmark_gpuOpenCL_Gauss(image, num_iterations):
     if cv2.ocl.haveOpenCL():
         cv2.ocl.setUseOpenCL(True)
@@ -64,7 +66,7 @@ def benchmark_gpuOpenCL_Gauss(image, num_iterations):
     cv2.ocl.setUseOpenCL(False)
     return end - start
 
-# @profile
+@profile
 def benchmark_gpu_Canny(image, num_iterations):
     if not cv2.cuda.getCudaEnabledDeviceCount():
         raise RuntimeError("No CUDA-capable GPU detected or OpenCV not built with CUDA support.")
@@ -95,6 +97,7 @@ def benchmark_gpu_Canny(image, num_iterations):
     # cv2.imwrite((str(int(time.time())) + ".jpg"), result)
     return (endGpuDownload - startGpuSetup) , gpuTime
 
+@profile
 def benchmark_gpu_gauss(image, num_iterations):
     if not cv2.cuda.getCudaEnabledDeviceCount():
         raise RuntimeError("No CUDA-capable GPU detected or OpenCV not built with CUDA support.")
@@ -201,9 +204,9 @@ def main():
     plt.plot(df['size'], df["cuda"], label="cuda")
     plt.plot(df['size'], df["openCL"], label="openCL")
     plt.legend()
-    plt.title("Exicution time (seconds) vs Size (w x h pixes) for "+ str(n) + " iterations")
+    plt.title("Execution time (seconds) vs Size (w x h pixes) for "+ str(n) + " iterations")
     plt.xlabel('size')
-    plt.ylabel('Exicution Time')
+    plt.ylabel('Execution Time')
     plotName = "plots/" + str(runTimestamp) + "_" + testName + "_n" + str(n) + "_thr" + str(args.num_cpu_threads) +".jpg"
     plt.savefig(plotName)
 

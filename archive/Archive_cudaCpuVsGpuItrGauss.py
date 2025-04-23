@@ -149,9 +149,9 @@ def main():
     plt.plot(df['size'], df["cuda"], label="cuda")
     plt.plot(df['size'], df["openCL"], label="openCL")
     plt.legend()
-    plt.title("Exicution time (seconds) vs Size (w x h pixes) for "+ str(n) + " iterations")
+    plt.title("Execution time (seconds) vs Size (w x h pixes) for "+ str(n) + " iterations")
     plt.xlabel('size')
-    plt.ylabel('Exicution Time')
+    plt.ylabel('Execution Time')
     plotName = "plots/" + runTimestamp + "_" + testName + "_n" + str(n) + "_thr" + str(args.num_cpu_threads) +".jpg"
     plt.savefig(plotName)
 
