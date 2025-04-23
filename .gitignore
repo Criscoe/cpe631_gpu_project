@@ -5,3 +5,4 @@ cupti_common*
 build
 .vscode
 settings
+*sandbox*
