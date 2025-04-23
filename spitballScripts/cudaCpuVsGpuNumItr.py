@@ -202,9 +202,9 @@ def main():
     plt.plot(df['n'], df["cuda"], label="cuda")
     plt.plot(df['n'], df["openCL"], label="openCL")
     plt.legend()
-    plt.title("Exicution time (seconds) vs Number Iterations")
+    plt.title("Execution time (seconds) vs Number Iterations")
     plt.xlabel('Number Iterations')
-    plt.ylabel('Exicution Time')
+    plt.ylabel('Execution Time')
     plotName = "plots/" + str(runTimestamp) + "_" + testName + "_n" + str(nMax) + "_thr" + str(args.num_cpu_threads) +".jpg"
     plt.savefig(plotName)
 
