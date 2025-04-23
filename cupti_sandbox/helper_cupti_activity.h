@@ -1022,6 +1022,8 @@ struct CalebData
 {
     unsigned long long duration = 0;
     unsigned long long occ = 0;
+    unsigned long long bytes = 0;
+    
 };
 
 static std::unordered_map<CUpti_ActivityKind, CalebData> activityKindDurationMap;
@@ -1045,6 +1047,7 @@ PrintActivity(
     case CUPTI_ACTIVITY_KIND_MEMCPY:
     {
         CUpti_ActivityMemcpy6 *pMemcpyRecord = (CUpti_ActivityMemcpy6 *)pRecord;
+        activityKindDurationMap[activityKind].bytes += (unsigned long long)pMemcpyRecord->bytes;
 
         fprintf(pFileHandle, "%s \"%s\" [ %llu, %llu ] duration %llu, size %llu, copyCount %llu, srcKind %s, dstKind %s, correlationId %u\n"
                              "\tdeviceId %u, contextId %u, streamId %u, graphId %u, graphNodeId %llu, channelId %u, channelType %s\n",
@@ -2388,7 +2391,7 @@ PrintActivityBuffer(
 
     for (auto &pair : activityKindDurationMap)
     {
-        fp << "Activity: " << GetActivityKindString(pair.first) << "\t\tTotalDuration: " << pair.second.duration << "\t\tOccurrences: " << pair.second.occ << std::endl;
+        fp << "Activity: " << GetActivityKindString(pair.first) << "\t\tTotalDuration: " << pair.second.duration << "\t\tOccurrences: " << pair.second.occ << "\t\tBytes: " << pair.second.bytes << std::endl;
     }
 }
 

@@ -149,7 +149,7 @@ def main():
     imageLarge = cv2.imread(args.image_path + "/sample.jpg")
 
     cpuBenchmarkMsg="Starting Iterations Test benchmark..."
-    print(cpuBenchmarkMsg)
+    # print(cpuBenchmarkMsg)
     n = args.num_iterations
     timeData = []
     gpu_timeData = []
