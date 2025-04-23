@@ -132,6 +132,7 @@ def benchmark_gpu_gauss(image, num_iterations):
 def main():
     parser = argparse.ArgumentParser(description="Python benchmark for Canny edge detection using single/multi threaded CPU and GPU.")
     parser.add_argument("--max-iterations", type=int, default=1000, help="Num iterations to execute calculations on")
+    parser.add_argument("--min-iterations", type=int, default=1, help="Num iterations to execute calculations on")
     parser.add_argument("--num-cpu-threads", type=int, default=16, help="Number of cpu threads to use")
     parser.add_argument("--full-image-path", type=str, default='images/sample.jpg', help="Path image folder used")
     parser.add_argument("--gauss", action="store_true", help="Use gauss algorithm")
@@ -146,13 +147,13 @@ def main():
 
     cpuBenchmarkMsg="Starting Num Iterations Test benchmark..."
     print(cpuBenchmarkMsg)
-    n = 1
+    n = args.min_iterations
     nMax = args.max_iterations
     timeData = []
     gpu_timeData = []
 
     gsImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    while n < nMax:
+    while n <= nMax:
         if args.gauss:
             cpu_time = benchmark_cpu_Gauss(gsImage, n)
             gpu_timeoOpenCl = benchmark_gpuOpenCL_Gauss(gsImage, n)
