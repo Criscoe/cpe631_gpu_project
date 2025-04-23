@@ -2342,6 +2342,8 @@ PrintActivity(
         break;
     }
 }
+#include <fstream>
+static std::ofstream fp("outData.txt");
 
 static void
 PrintActivityBuffer(
@@ -2386,7 +2388,7 @@ PrintActivityBuffer(
 
     for (auto &pair : activityKindDurationMap)
     {
-        printf("Activity: %s\t\tTotalDuration: %llu\t\tOccurrences: %llu\n", GetActivityKindString(pair.first), pair.second.duration, pair.second.occ);
+        fp << "Activity: " << GetActivityKindString(pair.first) << "\t\tTotalDuration: " << pair.second.duration << "\t\tOccurrences: " << pair.second.occ << std::endl;
     }
 }
 

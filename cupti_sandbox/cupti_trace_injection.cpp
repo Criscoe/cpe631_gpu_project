@@ -394,7 +394,6 @@ InjectionCallbackHandler(
         break;
     }
 }
-std::ostream fp("/home/criscoec/repos/cpe631_gpu_project/cupti_sandbox/outData.txt");
 static void SetupCupti(void)
 {
     UserData *pUserData = (UserData *)malloc(sizeof(UserData));
@@ -405,7 +404,7 @@ static void SetupCupti(void)
     pUserData->printActivityRecords = 1;
 
     // Common CUPTI Initialization.
-    InitCuptiTrace(pUserData, (void *)InjectionCallbackHandler, fp);
+    InitCuptiTrace(pUserData, (void *)InjectionCallbackHandler, stdout);
 
     injectionGlobals.subscriberHandle = globals.subscriberHandle;
 
