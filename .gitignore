@@ -8,3 +8,4 @@ settings
 sandbox*
 *.dll
 *.so
+tmp*/
