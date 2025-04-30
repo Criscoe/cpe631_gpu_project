@@ -37,33 +37,36 @@ def benchmark_gpuOpenCL_Canny(image, num_iterations):
         cv2.ocl.setUseOpenCL(False)
 
     start = time.time()
+    u_image = cv2.UMat(image)
+
     for _ in range(num_iterations):
-        u_image = cv2.UMat(image)
-
     # Apply Gaussian Blur using OpenCL
-        _ = cv2.Canny(u_image, lower, upper)
+        img = cv2.Canny(u_image, lower, upper)
     end = time.time()
-
+    # cv2.imshow("this", img.get())
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     cv2.ocl.setUseOpenCL(False)
     return end - start
 
 @profile
 def benchmark_gpuOpenCL_Gauss(image, num_iterations):
+    start = time.time()
     if cv2.ocl.haveOpenCL():
         cv2.ocl.setUseOpenCL(True)
     else:
         print("[WARNING] OpenCL is not available on this system.")
         cv2.ocl.setUseOpenCL(False)
 
-    start = time.time()
-    for _ in range(num_iterations):
-        u_image = cv2.UMat(image)
+    u_image = cv2.UMat(image)
 
     # Apply Gaussian Blur using OpenCL
-        _ = cv2.GaussianBlur(u_image, (15, 15), 1.5)
+    for _ in range(num_iterations):
+        img = cv2.GaussianBlur(u_image, (15, 15), 1.5)
     end = time.time()
 
     cv2.ocl.setUseOpenCL(False)
+    
     return end - start
 
 @profile
@@ -158,21 +161,21 @@ def main():
     gsImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     while n <= nMax:
         if args.gauss:
-            cpu_time = benchmark_cpu_Gauss(gsImage, n)
+            # cpu_time = benchmark_cpu_Gauss(gsImage, n)
             gpu_timeoOpenCl = benchmark_gpuOpenCL_Gauss(gsImage, n)
-            try:
-                gpu_time, tmpTime = benchmark_gpu_gauss(gsImage, n)
-                gpu_timeData.append(tmpTime)
-            except RuntimeError as e:
-                print(f"GPU Benchmark skipped: {e}")        
+            # try:
+            #     gpu_time, tmpTime = benchmark_gpu_gauss(gsImage, n)
+            #     gpu_timeData.append(tmpTime)
+            # except RuntimeError as e:
+            #     print(f"GPU Benchmark skipped: {e}")        
         else:
-            cpu_time = benchmark_cpu_Canny(gsImage, n)
+            # cpu_time = benchmark_cpu_Canny(gsImage, n)
             gpu_timeoOpenCl = benchmark_gpuOpenCL_Canny(gsImage, n)
-            try:
-                gpu_time, tmpTime = benchmark_gpu_Canny(gsImage, n)
-                gpu_timeData.append(tmpTime)
-            except RuntimeError as e:
-                print(f"GPU Benchmark skipped: {e}")        
+            # try:
+            #     gpu_time, tmpTime = benchmark_gpu_Canny(gsImage, n)
+            #     gpu_timeData.append(tmpTime)
+            # except RuntimeError as e:
+            #     print(f"GPU Benchmark skipped: {e}")        
         
         # print(f"CPU Time: {cpu_time:.6f} seconds\n")
         # print(f"GPU Time: {gpu_time:.6f} seconds\n")
