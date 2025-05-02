@@ -104,12 +104,6 @@ def benchmark_gpu_gauss(image, num_iterations):
     gpuTime = {}
     # Set up gpu and upload image
     startGpuSetup = time.time()
-    gpu_gaussian = cv2.cuda.createGaussianFilter(
-        cv2.CV_8UC1,  # Source image type (8-bit unsigned, single channel)
-        cv2.CV_8UC1,  # Destination image type
-        (15, 15),      # Kernel size (15x15)
-        1.5         # Sigma value (standard deviation)
-        )
     gpu_img = cv2.cuda_GpuMat()
     gpu_img.upload(image)
     endGpuSetup = time.time()
@@ -118,6 +112,12 @@ def benchmark_gpu_gauss(image, num_iterations):
 
     start = time.time()
     for _ in range(num_iterations):
+        gpu_gaussian = cv2.cuda.createGaussianFilter(
+            cv2.CV_8UC1,  # Source image type (8-bit unsigned, single channel)
+            cv2.CV_8UC1,  # Destination image type
+            (15, 15),      # Kernel size (15x15)
+            1.5         # Sigma value (standard deviation)
+            )
         gpu_result = gpu_gaussian.apply(gpu_img)
 
     end = time.time()
